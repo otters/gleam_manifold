@@ -1,13 +1,13 @@
 # gleam_manifold
 
+Gleam bindings to [Manifold](https://github.com/discord/manifold) - an Elixir library for fast message passing between BEAM nodes.
+
 > [!WARNING]
 > This library depends on internal implementation details of Gleam's `erlang/process` module. It is not officially supported and may break with future Gleam releases. Use at your own risk.
 
-Gleam bindings to [Manifold](https://github.com/discord/manifold) - an Elixir library for fast message passing between BEAM nodes.
-
 ## What is Manifold?
 
-Manifold is an Elixir library originally developed by Discord that optimizes sending the same message to many processes. Instead of sending messages sequentially (which can be slow with thousands of processes), Manifold uses a divide-and-conquer approach that distributes the work across multiple sender processes, achieving much better performance at scale.
+Manifold is an Elixir library developed by Discord that optimizes sending the same message to many processes. Instead of sending messages sequentially (which can be slow with thousands of processes), Manifold uses a divide-and-conquer approach that distributes the work across multiple sender processes, achieving much better performance at scale.
 
 ## Installation
 
