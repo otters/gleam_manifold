@@ -1,0 +1,15 @@
+name = "gleam_manifold"
+version = "1.0.0"
+
+description = "Gleam bindings to github.com/discord/manifold"
+licences = ["MIT"]
+repository = { type = "github", user = "otters", repo = "gleam_manifold" }
+links = [{ title = "Website", href = "https://otters.app" }]
+
+[dependencies]
+gleam_stdlib = ">= 0.44.0 and < 2.0.0"
+gleam_erlang = ">= 1.3.0 and < 2.0.0"
+manifold = ">= 1.6.0 and < 2.0.0"
+
+[dev-dependencies]
+gleeunit = ">= 1.0.0 and < 2.0.0"
