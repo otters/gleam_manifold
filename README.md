@@ -1,5 +1,8 @@
 # gleam_manifold
 
+> [WARNING]
+> This library depends on internal implementation details of Gleam's `erlang/process` module. It is not officially supported and may break with future Gleam releases. Use at your own risk.
+
 Gleam bindings to [Manifold](https://github.com/discord/manifold) - an Elixir library for fast message passing between BEAM nodes.
 
 ## What is Manifold?
