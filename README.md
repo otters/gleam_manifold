@@ -51,9 +51,121 @@ pub fn broadcast(pids: List(process.Pid), message: String) {
 }
 ```
 
-## Current Limitations
+### Advanced Options
 
-**No options parameter support**: The Elixir Manifold library supports an options parameter for tuning performance characteristics (like partition size). This Gleam wrapper doesn't currently expose these options, though this could be added in the future.
+The library supports the same options as the Elixir Manifold library for tuning performance:
+
+#### Pack Modes
+
+Control how messages are serialized before sending:
+
+```gleam
+import gleam_manifold as manifold
+
+pub fn send_with_packing() {
+  let subject = manifold.new_subject()
+  let pid = process.self()
+
+  // Binary packing - efficient for large messages sent to many processes
+  manifold.send_with_options(
+    pid,
+    subject,
+    large_data,
+    [manifold.PackModeOption(manifold.Binary)]
+  )
+
+  // ETF (Erlang Term Format) - default behavior
+  manifold.send_with_options(
+    pid,
+    subject,
+    data,
+    [manifold.PackModeOption(manifold.Etf)]
+  )
+
+  // No packing
+  manifold.send_with_options(
+    pid,
+    subject,
+    data,
+    [manifold.PackModeOption(manifold.NoPacking)]
+  )
+}
+```
+
+#### Send Modes
+
+Control how messages are delivered:
+
+```gleam
+import gleam_manifold as manifold
+
+pub fn send_with_offload() {
+  let subject = manifold.new_subject()
+  let pids = get_many_pids()
+
+  // Offload mode - non-blocking, routes through sender processes
+  manifold.send_multi_with_options(
+    pids,
+    subject,
+    message,
+    [manifold.SendModeOption(manifold.Offload)]
+  )
+
+  // Direct mode (default) - sends directly
+  manifold.send_multi_with_options(
+    pids,
+    subject,
+    message,
+    [manifold.SendModeOption(manifold.Direct)]
+  )
+}
+```
+
+#### Combining Options
+
+You can combine multiple options for fine-tuned control:
+
+```gleam
+pub fn optimized_broadcast(pids: List(process.Pid), message: String) {
+  let subject = manifold.new_subject()
+
+  // Use binary packing with offload mode for optimal performance
+  manifold.send_multi_with_options(
+    pids,
+    subject,
+    message,
+    [
+      manifold.PackModeOption(manifold.Binary),
+      manifold.SendModeOption(manifold.Offload)
+    ]
+  )
+}
+```
+
+### Partitioner and Sender Keys
+
+Control load distribution across Manifold's internal processes:
+
+```gleam
+import gleam_manifold as manifold
+
+pub fn with_custom_routing() {
+  // Set a custom partitioner key for consistent routing
+  manifold.set_partitioner_key("user_123")
+
+  // Set a custom sender key for offloaded messages
+  manifold.set_sender_key("channel_456")
+
+  // Messages will be routed based on these keys
+  manifold.send(pid, subject, message)
+}
+```
+
+This is useful for:
+
+- Ensuring message ordering for specific entities
+- Load balancing across partitioner processes
+- Preventing hot spots in message distribution
 
 ## Testing
 
