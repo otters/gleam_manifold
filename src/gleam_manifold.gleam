@@ -1,18 +1,26 @@
 import gleam/erlang/process
 import gleam/erlang/reference
 
-pub fn send(subject: process.Subject(message), message: message) -> Nil {
-  let assert Ok(#(pid, ref)) = unwrap_subject(subject)
-    as "Named subjects are currently unsupported in gleam_manifold.send()"
-  manifold_send_subject(pid, #(ref, message))
-  Nil
+pub opaque type Subject(message) {
+  Subject(tag: reference.Reference)
+}
+
+type Message(message) =
+  #(reference.Reference, message)
+
+pub fn new_subject() -> Subject(message) {
+  Subject(reference.new())
 }
 
 /// You almost certainly do not want to use this. 
 /// Absolutely prefer to use the type-safe variant of
 /// this function `manifold.send(subject, message)`
-pub fn send_pid(pid: process.Pid, message: message) -> Nil {
-  manifold_send_raw(pid, message)
+pub fn send(
+  pid: process.Pid,
+  subject: Subject(message),
+  message: message,
+) -> Nil {
+  manifold_send(pid, #(subject.tag, message))
   Nil
 }
 
@@ -26,26 +34,28 @@ pub fn send_pid(pid: process.Pid, message: message) -> Nil {
 /// impossible because they are unique. You would have to use something
 /// like `process.select_other` to take advantage of receiving values
 /// with this function still within Gleam.
-pub fn send_multi_pid(pids: List(process.Pid), message: message) -> Nil {
-  manifold_send_multi(pids, message)
+pub fn send_multi(
+  pids: List(process.Pid),
+  subject: Subject(message),
+  message: message,
+) -> Nil {
+  manifold_send_multi(pids, #(subject.tag, message))
   Nil
 }
 
 type DoNotLeak
 
-@external(erlang, "gleam_manifold_ffi", "unwrap_subject")
-fn unwrap_subject(
-  subject: process.Subject(message),
-) -> Result(#(process.Pid, reference.Reference), Nil)
+@external(erlang, "gleam_manifold_ffi", "receive")
+pub fn receive(subject: Subject(message), timeout: Int) -> Result(message, Nil)
+
+@external(erlang, "gleam_manifold_ffi", "receive")
+pub fn receive_forever(subject: Subject(message)) -> message
 
 @external(erlang, "Elixir.Manifold", "send")
-fn manifold_send_subject(
-  pid: process.Pid,
-  message: #(reference.Reference, message),
+fn manifold_send(pid: process.Pid, message: Message(message)) -> DoNotLeak
+
+@external(erlang, "Elixir.Manifold", "send")
+fn manifold_send_multi(
+  pid: List(process.Pid),
+  message: Message(message),
 ) -> DoNotLeak
-
-@external(erlang, "Elixir.Manifold", "send")
-fn manifold_send_raw(pid: process.Pid, message: message) -> DoNotLeak
-
-@external(erlang, "Elixir.Manifold", "send")
-fn manifold_send_multi(pid: List(process.Pid), message: message) -> DoNotLeak

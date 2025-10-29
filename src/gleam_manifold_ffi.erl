@@ -1,7 +1,14 @@
 -module(gleam_manifold_ffi).
--export([unwrap_subject/1]).
+-export(['receive'/1, 'receive'/2]).
 
-unwrap_subject({subject, Pid, Ref}) ->
-    {ok, {Pid, Ref}};
-unwrap_subject(_Subject) ->
-    {error, nil}.
+'receive'({subject, Ref}) ->
+    receive
+        {Ref, Message} -> Message
+    end.
+
+'receive'({subject, Ref}, Timeout) ->
+    receive
+        {Ref, Message} -> {ok, Message}
+    after Timeout ->
+        {error, nil}
+    end.

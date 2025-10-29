@@ -7,48 +7,51 @@ pub fn main() -> Nil {
 }
 
 pub fn simple_test() {
-  let subject = process.new_subject()
-  process.spawn(fn() { manifold.send(subject, "Hello world") })
-  assert process.receive(subject, 100) == Ok("Hello world")
+  let subject = manifold.new_subject()
+  let pid = process.self()
+  process.spawn(fn() { manifold.send(pid, subject, "Hello world") })
+  assert manifold.receive(subject, 100) == Ok("Hello world")
 }
 
 pub fn many_pids_test() {
-  let subject = process.new_subject()
+  let subject = manifold.new_subject()
+  let pid = process.self()
 
   let proc = fn() {
     let selector = process.new_selector() |> process.select_other(identity)
-    let assert Ok(result) = process.selector_receive(selector, 5)
-    process.send(subject, result)
+    let assert Ok(#(_ref, result)) = process.selector_receive(selector, 5)
+    manifold.send(pid, subject, result)
   }
 
   let a = process.spawn(proc)
   let b = process.spawn(proc)
 
-  manifold.send_pid(a, "hello from a")
-  manifold.send_pid(b, "hello from b")
+  manifold.send(a, subject, "hello from a")
+  manifold.send(b, subject, "hello from b")
 
-  assert process.receive(subject, 5) == Ok("hello from a")
-  assert process.receive(subject, 5) == Ok("hello from b")
-  assert process.receive(subject, 5) == Error(Nil)
+  assert manifold.receive(subject, 5) == Ok("hello from a")
+  assert manifold.receive(subject, 5) == Ok("hello from b")
+  assert manifold.receive(subject, 5) == Error(Nil)
 }
 
 pub fn multi_pids_test() {
-  let subject = process.new_subject()
+  let subject = manifold.new_subject()
+  let pid = process.self()
 
   let proc = fn() {
     let selector = process.new_selector() |> process.select_other(identity)
-    let assert Ok(result) = process.selector_receive(selector, 5)
-    process.send(subject, result)
+    let assert Ok(#(_ref, result)) = process.selector_receive(selector, 5)
+    manifold.send(pid, subject, result)
   }
 
   let a = process.spawn(proc)
   let b = process.spawn(proc)
 
-  manifold.send_multi_pid([a, b], "hello from both")
+  manifold.send_multi([a, b], subject, "hello from both")
 
-  assert process.receive(subject, 5) == Ok("hello from both")
-  assert process.receive(subject, 5) == Ok("hello from both")
-  assert process.receive(subject, 5) == Error(Nil)
+  assert manifold.receive(subject, 5) == Ok("hello from both")
+  assert manifold.receive(subject, 5) == Ok("hello from both")
+  assert manifold.receive(subject, 5) == Error(Nil)
 }
 
 @external(erlang, "gleam_erlang_ffi", "identity")
