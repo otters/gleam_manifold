@@ -54,10 +54,6 @@ pub fn new_subject() -> Subject(message) {
   Subject(reference.new())
 }
 
-/// Send a message to a process using the default settings.
-/// You almost certainly do not want to use this.
-/// Absolutely prefer to use the type-safe variant of
-/// this function `manifold.send(subject, message)`
 pub fn send(
   pid: process.Pid,
   subject: Subject(message),
@@ -67,8 +63,6 @@ pub fn send(
   Nil
 }
 
-/// Send a message to a process with custom options.
-/// This allows you to control packing and send mode.
 pub fn send_with_options(
   pid: process.Pid,
   subject: Subject(message),
@@ -80,16 +74,6 @@ pub fn send_with_options(
   Nil
 }
 
-/// Call Manifold.send with a list of pids as the first argument, as
-/// is supported in Manifold
-///
-/// Sending multi does not support sending to subjects, because
-/// subjects themselves EACH have a unique tag along with them. The
-/// subject expects the tag to be included in the message itself, so
-/// this would mean that all subjects need to have the same tag, which is
-/// impossible because they are unique. You would have to use something
-/// like `process.select_other` to take advantage of receiving values
-/// with this function still within Gleam.
 pub fn send_multi(
   pids: List(process.Pid),
   subject: Subject(message),
@@ -99,8 +83,6 @@ pub fn send_multi(
   Nil
 }
 
-/// Send a message to multiple processes with custom options.
-/// This allows you to control packing and send mode.
 pub fn send_multi_with_options(
   pids: List(process.Pid),
   subject: Subject(message),
