@@ -1,3 +1,13 @@
+//// Gleam bindings to Discord's Manifold library
+////
+//// More information about Manifold can be found on its
+//// [GitHub page](https://github.com/discord/manifold).
+//// 
+//// Unlike Gleam's erlang module, Subjects in gleam_manifold
+//// are not bound to a specific process. They're merely a unique
+//// tag which provides runtime guarantees about type-safe
+//// message delivery.
+
 import gleam/erlang/process
 import gleam/erlang/reference
 
@@ -8,6 +18,8 @@ pub opaque type Subject(message) {
 type Message(message) =
   #(reference.Reference, message)
 
+/// Create a new Manifold subject for sending and receiving messages
+/// of the specified type.
 pub fn new_subject() -> Subject(message) {
   Subject(reference.new())
 }
@@ -43,13 +55,13 @@ pub fn send_multi(
   Nil
 }
 
-type DoNotLeak
-
 @external(erlang, "gleam_manifold_ffi", "receive")
 pub fn receive(subject: Subject(message), timeout: Int) -> Result(message, Nil)
 
 @external(erlang, "gleam_manifold_ffi", "receive")
 pub fn receive_forever(subject: Subject(message)) -> message
+
+type DoNotLeak
 
 @external(erlang, "Elixir.Manifold", "send")
 fn manifold_send(pid: process.Pid, message: Message(message)) -> DoNotLeak
