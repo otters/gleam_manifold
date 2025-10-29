@@ -19,11 +19,6 @@ pub opaque type Subject(message) {
 type Message(message) =
   #(reference.Reference, message)
 
-// Type aliases for Erlang interop
-type Atom
-
-type DoNotLeak
-
 /// Pack mode determines how messages are serialized before sending
 pub type PackMode {
   /// Pack messages as binary using term_to_binary
@@ -137,6 +132,10 @@ fn options_to_keyword_list(options: List(ManifoldOption)) -> List(#(Atom, Term))
 }
 
 type Term
+
+type Atom
+
+type DoNotLeak
 
 @external(erlang, "gleam_manifold_ffi", "create_atom")
 fn create_atom(name: String) -> Atom
